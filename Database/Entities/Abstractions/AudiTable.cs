@@ -8,5 +8,7 @@ namespace DocumentationWebSiteApi.Database.Entities.Abstractions
         public Guid? CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
+
+        public ICollection<MultiLanguageText> MultiLanguageTexts { get; set; } = [];
     }
 }

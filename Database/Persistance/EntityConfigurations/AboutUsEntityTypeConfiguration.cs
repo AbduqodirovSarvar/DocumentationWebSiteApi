@@ -11,6 +11,7 @@ namespace DocumentationWebSiteApi.Database.Persistance.EntityConfigurations
             base.Configure(builder);
             builder.HasMany(x => x.Contacts).WithOne(x => x.AboutUs).HasForeignKey(x => x.AboutUsId);
             builder.HasOne(x => x.Address).WithOne().HasForeignKey<AboutUs>(x => x.AddressId);
+
         }
     }
 }
