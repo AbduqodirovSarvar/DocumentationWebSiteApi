@@ -15,6 +15,7 @@ namespace DocumentationWebSiteApi.Extentions
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IHashService, HashService>();
             services.AddTransient<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IFileService, FileService>();
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
