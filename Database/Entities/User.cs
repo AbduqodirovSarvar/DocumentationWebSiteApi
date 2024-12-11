@@ -1,4 +1,5 @@
 ﻿using DocumentationWebSiteApi.Database.Entities.Abstractions;
+using DocumentationWebSiteApi.Database.Enumerations;
 using System.ComponentModel.DataAnnotations;
 
 namespace DocumentationWebSiteApi.Database.Entities
@@ -11,5 +12,6 @@ namespace DocumentationWebSiteApi.Database.Entities
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
+        public Roles Role { get; set; } = default;
     }
 }

@@ -1,12 +1,12 @@
 ﻿using DocumentationWebSiteApi.Models;
 using Microsoft.AspNetCore.Http.Features;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DocumentationWebSiteApi.Database.EntityFramework;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using DocumentationWebSiteApi.Database.Enumerations;
 
 namespace DocumentationWebSiteApi.Extentions
 {
@@ -28,7 +28,7 @@ namespace DocumentationWebSiteApi.Extentions
             {
                 o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(o =>
+               }).AddJwtBearer(o =>
                {
                    o.TokenValidationParameters = new TokenValidationParameters
                    {
@@ -50,8 +50,59 @@ namespace DocumentationWebSiteApi.Extentions
                            return Task.CompletedTask;
                        }
                    };
+               });
+
+             builder.Services.AddAuthorization(options =>
+             {
+                 options.AddPolicy("Admin", polisy =>
+                 {
+                     polisy.RequireClaim("Roles", Roles.admin.ToString());
+                 });
+             });
+
+             builder.Services.AddAuthorization(options =>
+             {
+                 options.AddPolicy("Employee", polisy =>
+                 {
+                     polisy.RequireClaim("Roles", Roles.Employee.ToString());
+                 });
+             });
+
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.CustomSchemaIds(type => type.FullName);
+
+                options.SwaggerDoc("V1", new OpenApiInfo()
+                {
+                    Version = "V1",
+                    Title = "DocumentationWebSiteApi"
                 });
-            
+
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Bearer Authentication",
+                    Type = SecuritySchemeType.Http
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme()
+                        {
+                          Reference = new OpenApiReference()
+                          {
+                              Id = "Bearer",
+                              Type = ReferenceType.SecurityScheme
+                          }
+                        },
+                          new List<string>()
+                    }
+                });
+            });
+
                 builder.Services.AddCors(o => o.AddPolicy("AddCors", builder =>
                 {
                     builder.AllowAnyOrigin()
@@ -62,8 +113,14 @@ namespace DocumentationWebSiteApi.Extentions
 
         public static async Task ConfigurePipelineAsync(this WebApplication app)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/V1/swagger.json", "DocumentationWebSiteApi");
+                });
+            }
 
             app.UseCors("AddCors");
 
@@ -72,7 +129,7 @@ namespace DocumentationWebSiteApi.Extentions
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseStaticFiles();
             app.MapControllers();
 
             using var scope = app.Services.CreateScope();
